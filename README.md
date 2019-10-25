@@ -57,3 +57,35 @@ const ask = (text)=> new Promise((resolve, reject)=>{
     readline.question(text, (answer)=>resolve(answer));
 });
 ```
+
+## Comparacion profunda de objeto | Deep comparison
+```js
+Object.compare = function (obj1, obj2) {
+    if(typeof obj1 !== typeof obj2 ) return false;
+	//iterar propiedades obj1
+	for (var p in obj1) {
+		//Verificar si la propiedad existe en ambos objetos
+		if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
+
+		switch (typeof (obj1[p])) {
+			//Comparar objetos internos
+			case 'object':
+				if (!Object.compare(obj1[p], obj2[p])) return false;
+				break;
+			//Comparar codigo de los metodos internos
+			case 'function':
+				if (typeof (obj2[p]) == 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
+				break;
+			//Comparar valores primitivos
+			default:
+				if (obj1[p] != obj2[p]) return false;
+		}
+	}
+
+	//Verificar si obj2 tiene propiedades extra
+	for (var p in obj2) {
+		if (typeof (obj1[p]) == 'undefined') return false;
+	}
+	return true;
+};
+```
