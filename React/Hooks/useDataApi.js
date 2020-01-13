@@ -1,4 +1,4 @@
-import { useState, useReducer } from 'react';
+import { useReducer } from 'react';
 import axios from 'axios';
 
 const reducer = (state, action) => {
@@ -6,6 +6,8 @@ const reducer = (state, action) => {
 	case 'FETCH_INIT':
 		return {
 			...state,
+			status: 0,
+			isSuccess: false,
 			isLoading: true,
 			isError: false,
 			error: null,
@@ -14,16 +16,20 @@ const reducer = (state, action) => {
 	case 'FETCH_SUCCESS':
 		return {
 			...state,
-			isError: false,
+			status: action.payload.status,
+			isSuccess: true,
 			isLoading: false,
-			data: action.payload,
+			isError: false,
+			data: action.payload.data,
 		};
 	case 'FETCH_FAILURE':
 		return {
 			...state,
-			isError: true,
+			status: action.payload.status,
+			isSuccess: false,
 			isLoading: false,
-			error: action.payload,
+			isError: true,
+			error: action.payload.data,
 		};
 	default:
 		throw new Error();
@@ -35,43 +41,38 @@ const reducer = (state, action) => {
  * @typedef {Object} state
  * @property {boolean} isLoading - Cargando
  * @property {boolean} isError - Ocurrio un error
+ * @property {boolean} isSuccess - La solicitud ha sido completada con exito
+ * @property {boolean} status - Estado de la peticion
  * @property {any} data - Respuesta de la solicitud
  * @property {any} error - Error de la solicitud
  */
 
 /**
- * Acciones
- * @typedef {Object} actions
- * @property {function(): void} fetchData - Realiza la solicitud al endpoint
- * @property {function(): void} setBody - Establece el cuerpo de la solicitud
- * @property {function(): void} setMethod - Establece el metodo de la solicitud
- */
-
-/**
- * Cuerpo de la solicitud
- * @typedef {any} body
- */
-
-/**
  * useDataApi
  * @param {string} url - Url de la api a solicitar
- * @param {string} [initialMethod=get] - Metodo inicial de la peticion a la api
+ * @param {string} [initialMethod='get'] - Metodo inicial de la peticion a la api
  * @param {string?} headers - Header de la peticion
- * @returns {[state, actions, body]}
+ * @returns {[state, fetchData]}
  */
-const useDataApi = (url, initialMethod = 'get', headers = null) => {
-	const [method, setMethod] = useState(initialMethod);
-	const [body, setBody] = useState(null);
-
+const useDataApi = (url, headers = null) => {
 	const [state, dispatch] = useReducer(reducer, {
+		isSuccess: false,
 		isLoading: false,
 		isError: false,
 		data: null,
 		error: null,
 	});
 
-	const fetchData = async () => {
+	/**
+	 * fetchData
+	 * @param {any} [body] - Cuerpo de la peticion
+	 * @param {string} [method="get"] - tipo de metodo
+	 */
+	const fetchData = async (body = null, method = 'get') => {
 		dispatch({ type: 'FETCH_INIT' });
+
+		if (state.isLoading) return;
+
 		try {
 			const result = await axios({
 				method,
@@ -79,14 +80,17 @@ const useDataApi = (url, initialMethod = 'get', headers = null) => {
 				headers,
 				data: body,
 			});
-			dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
+
+			const { data, status } = result;
+
+			dispatch({ type: 'FETCH_SUCCESS', payload: { data, status } });
 		} catch (error) {
-			dispatch({ type: 'FETCH_FAILURE', payload: error });
+			dispatch({ type: 'FETCH_FAILURE', payload: { data: error, status: error.response?.status } });
 		}
 	};
 
 
-	return [state, { fetchData, setBody, setMethod }, body];
+	return [state, fetchData];
 };
 
 export default useDataApi;

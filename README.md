@@ -59,11 +59,17 @@ const ask = (text)=> new Promise((resolve, reject)=>{
 ```
 
 ## Comparacion profunda de objeto | Deep comparison
+La forma sencilla:
+```js
+JSON.stringify(obj1) === JSON.stringify(obj2);
+```
+
+La forma compleja
 ```js
 Object.compare = function (obj1, obj2) {
     if(typeof obj1 !== typeof obj2 ) return false;
 	//iterar propiedades obj1
-	for (var p in obj1) {
+	for (let p in obj1) {
 		//Verificar si la propiedad existe en ambos objetos
 		if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
 
