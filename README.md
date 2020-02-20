@@ -16,6 +16,18 @@ const readFolder = (path) => new Promise((resolve, reject) => {
 });
 ```
 
+## Leer una Imagen
+```js
+const request = require('request');
+const getImage = (url)=> new Promise((resolve, reject)=>{
+	request({ url, encoding: null}, (err, resp, buffer) => {
+		if(err) return reject(err);
+		
+		resolve(`data:${resp.headers['content-type']};base64,${buffer.toString('base64')}`);
+	});
+});
+```
+
 ## Reemplazar texto en archivos
 ```js
 const fs = require('fs');
