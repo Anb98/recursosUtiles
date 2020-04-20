@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const useSearch = () => {
+const useSearch = ({ whitelist = [], blacklist = [] } = {}) => {
 	const [searchValue, setSearchValue] = useState('');
 	const [filtered, setFiltered] = useState([]);
 	const [sourceData, setSourceData] = useState([]);
@@ -11,12 +11,16 @@ const useSearch = () => {
 		const filteredData = sourceData.filter((item, i) => {
 			let res = false;
 			for (const prop in item) {
-				if (value.length == 1) { // una sola palabra
+				if (blacklist.includes(prop) || (whitelist.length && !whitelist.includes(prop))) {
+					continue;
+				}
+
+				if (value.length === 1) { // una sola palabra
 					if (String(item[prop]).toLocaleLowerCase().includes(value[0])) res = true;
 				} else { // al menos 2 palabras de busqueda
 					let coincidencias = 0;
-					value.forEach((value, i) => {
-						if (String(item[prop]).toLocaleLowerCase().includes(value)) coincidencias++;
+					value.forEach((el, i) => {
+						if (String(item[prop]).toLocaleLowerCase().includes(el)) coincidencias++;
 					});
 
 					if (coincidencias >= value.length) res = true;
@@ -34,5 +38,6 @@ const useSearch = () => {
 
 	return [filtered, setSearchValue, setSourceData];
 };
+
 
 export default useSearch;
