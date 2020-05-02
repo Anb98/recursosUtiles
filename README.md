@@ -70,6 +70,19 @@ const ask = (text)=> new Promise((resolve, reject)=>{
 });
 ```
 
+## Crear un Readable stream a partir de un Buffer de datos
+```js
+const { Readable } = require('stream');
+
+const buffer = new Buffer(img_string, 'base64')
+const readable = new Readable()
+readable._read = () => {};
+readable.push(buffer)
+readable.push(null)
+
+readable.pipe(consumer)
+```
+
 ## Comparacion profunda de objeto | Deep comparison
 La forma sencilla:
 ```js
