@@ -1,5 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
+/**
+ * @typedef {Object} optionalParams
+ * @prop {string[]]} [whitelist] - Propiedades en las que buscar
+ * @prop {string[]]} [blacklist] - Propiedades a ignorar
+ */
+
+/**
+ * This callback is displayed as a global member.
+ * @callback setSearchValue
+ * @param {string} value - Valor a buscar
+ * @returns {void}
+ */
+
+/**
+ * This callback is displayed as a global member.
+ * @callback setSourceData
+ * @param {Object[]} sourceData - Fuente de datos para la busqueda
+ * @returns {void}
+ */
+
+
+/**
+ * useSearch
+ * @param {optionalParams} 
+ * @returns {[filtered, setSearchValue, setSourceData]} Data filtrada, funcion setSearchValue y funcion setSourceData
+ */
 const useSearch = ({ whitelist = [], blacklist = [] } = {}) => {
 	const [searchValue, setSearchValue] = useState('');
 	const [filtered, setFiltered] = useState([]);
