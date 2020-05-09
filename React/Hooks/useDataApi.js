@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import React, { useReducer } from 'react';
 import axios from 'axios';
 
 const reducer = (state, action) => {
@@ -39,22 +39,30 @@ const reducer = (state, action) => {
 /**
  * Estado de la solicitud
  * @typedef {Object} state
- * @property {boolean} isLoading - Cargando
- * @property {boolean} isError - Ocurrio un error
- * @property {boolean} isSuccess - La solicitud ha sido completada con exito
- * @property {boolean} status - Estado de la peticion
- * @property {any} data - Respuesta de la solicitud
- * @property {any} error - Error de la solicitud
+ * @prop {boolean} isLoading - Cargando
+ * @prop {boolean} isError - Ocurrio un error
+ * @prop {boolean} isSuccess - La solicitud ha sido completada con exito
+ * @prop {boolean} status - Estado de la peticion
+ * @prop {any} data - Respuesta de la solicitud
+ * @prop {any} error - Error de la solicitud
+ */
+
+/**
+ * Configuracion inicial
+ * @typedef {Object} initialSettings
+ * @prop {string} [url] - Url inicial de la api a solicitar
+ * @prop {string} [headers] - Header de la peticion
  */
 
 /**
  * useDataApi
- * @param {string} url - Url de la api a solicitar
- * @param {string} [initialMethod='get'] - Metodo inicial de la peticion a la api
- * @param {string?} headers - Header de la peticion
- * @returns {[state, fetchData]}
+ * @param {initialSettings} [initialSettings] - Configuracion inicial
+ * @returns {[state, fetchData]} Estado del hook y funcion fetchData 
  */
-const useDataApi = (url, headers = null) => {
+const useDataApi = ({
+	url: originalUrl,
+	headers = null
+}={}) => {
 	const [state, dispatch] = useReducer(reducer, {
 		isSuccess: false,
 		isLoading: false,
@@ -64,11 +72,25 @@ const useDataApi = (url, headers = null) => {
 	});
 
 	/**
-	 * fetchData
-	 * @param {any} [body] - Cuerpo de la peticion
-	 * @param {string} [method="get"] - tipo de metodo
+	 * Parametros
+	 * @typedef {Object} fetchDataParams
+	 * @prop {any} [body] - Cuerpo de la peticion
+	 * @prop {string} [method=get] - Metodo http
+	 * @prop {string} [params] - Parametros get de la peticion
+	 * @prop {string} [url] - URL de la peticion
 	 */
-	const fetchData = async (body = null, method = 'get') => {
+
+	/**
+	 * fetchData
+	 * @param {fetchDataParams}
+	 */
+	const fetchData = async ({
+		body = null,
+		method = 'get',
+		params = undefined,
+		url = null,
+		}={}) => {
+
 		dispatch({ type: 'FETCH_INIT' });
 
 		if (state.isLoading) return;
@@ -76,9 +98,10 @@ const useDataApi = (url, headers = null) => {
 		try {
 			const result = await axios({
 				method,
-				url,
+				url: url || originalUrl,
 				headers,
 				data: body,
+				params,
 			});
 
 			const { data, status } = result;

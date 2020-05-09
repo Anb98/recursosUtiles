@@ -1,4 +1,4 @@
-import { useReducer, useContext } from 'react';
+import React, { useReducer, useContext } from 'react';
 import axios from 'axios';
 
 import { CacheContext } from '@contexts/CacheContext';
@@ -41,23 +41,32 @@ const reducer = (state, action) => {
 /**
  * Estado de la solicitud
  * @typedef {Object} state
- * @property {boolean} isLoading - Cargando
- * @property {boolean} isError - Ocurrio un error
- * @property {boolean} isSuccess - La solicitud ha sido completada con exito
- * @property {boolean} status - Estado de la peticion
- * @property {any} data - Respuesta de la solicitud
- * @property {any} error - Error de la solicitud
+ * @prop {boolean} isLoading - Cargando
+ * @prop {boolean} isError - Ocurrio un error
+ * @prop {boolean} isSuccess - La solicitud ha sido completada con exito
+ * @prop {boolean} status - Estado de la peticion
+ * @prop {any} data - Respuesta de la solicitud
+ * @prop {any} error - Error de la solicitud
+ */
+
+/**
+ * Configuracion inicial
+ * @typedef {Object} initialSettings
+ * @prop {string} [url] - Url inicial de la api a solicitar
+ * @prop {string} [headers] - Header de la peticion
+ * @prop {boolean} [hasCache] - Cache los resultados en context
  */
 
 /**
  * useDataApi
- * @param {string} url - Url de la api a solicitar
- * @param {string} [initialMethod='get'] - Metodo inicial de la peticion a la api
- * @param {string?} headers - Header de la peticion
- * @param {boolean?} hasCache - Cache los resultados en context
- * @returns {[state, fetchData]}
+ * @param {initialSettings} [initialSettings] - Configuracion inicial
+ * @returns {[state, fetchData]} Estado del hook y funcion fetchData 
  */
-const useDataApi = (originalUrl, headers = null, hasCache = false) => {
+const useDataApi = ({
+	url: originalUrl,
+	headers = null,
+	hasCache = false
+} = {}) => {
 	const { state: stateCache, setResult } = useContext(CacheContext);
 
 	const [state, dispatch] = useReducer(reducer, {
@@ -85,19 +94,27 @@ const useDataApi = (originalUrl, headers = null, hasCache = false) => {
 	};
 
 	/**
+	 * Parametros
+	 * @typedef {Object} fetchDataParams
+	 * @prop {any} [body] - Cuerpo de la peticion
+	 * @prop {string} [method=get] - tipo de metodo
+	 * @prop {string} [params] - parametros get de la peticion
+	 * @prop {string} [url] - url de la peticion
+	 * @prop {string} [refreshCache=false] - Refresca el cache si existe
+	 */
+
+	/**
 	 * fetchData
-	 * @param {any} [body] - Cuerpo de la peticion
-	 * @param {string} [method="get"] - tipo de metodo
-	 * @param {string} [params] - parametros get de la peticion
-	 * @param {string} [url] - url de la peticion
+	 * @param {fetchDataParams}
 	 */
 	const fetchData = async ({
 		body = null,
 		method = 'get',
 		params = undefined,
 		url = null,
+		refreshCache = false
 	} = {}) => {
-		if (state.isLoading) return;
+		if (state.isLoading) return;	//hay una solicitud en proceso
 
 		const request = {
 			method,
@@ -114,7 +131,7 @@ const useDataApi = (originalUrl, headers = null, hasCache = false) => {
 		}
 
 
-		if (stateCache[stringRequest]) {
+		if (stateCache[stringRequest] && !refreshCache ) {
 			dispatch({
 				type: 'FETCH_SUCCESS',
 				payload: { data: stateCache[stringRequest], status: 200 },
