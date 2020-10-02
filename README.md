@@ -1,5 +1,12 @@
 # Funciones utiles para proyectos con JS
 
+## Solo digitos 
+```js
+const getNumbers = (val) => Array.from(val)
+	.filter(el=> !/\D/.test(el))
+	.join('');
+```
+
 ## Leer archivo asyncrono | read async file
 ```js
 const fs = require('fs');
